@@ -18,9 +18,19 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"),
-    new MySqlServerVersion(new Version(8, 0, 23))));
+{
+    options.UseMySql(
+        connectionString,
+        ServerVersion.AutoDetect(connectionString),
+        mySqlOptions =>
+        {
+            mySqlOptions.CommandTimeout(180); // 3 minutes timeout
+        });
+});
+
 builder.Services.AddScoped<ILoggerService, LoggerService>();
 builder.Services.AddScoped<ProjectService.Services.ProjectService>();
 
