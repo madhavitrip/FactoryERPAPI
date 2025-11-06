@@ -527,7 +527,16 @@ public class QuantitySheetController : ControllerBase
         var existingSheets = await _context.QuantitySheets
             .Where(s => s.ProjectId == projectId)
             .ToListAsync();
+        var newCatchNos = newSheets.Select(s => s.CatchNo).Distinct().ToList();
+        var sheetsToDelete = existingSheets
+            .Where(s => !newCatchNos.Contains(s.CatchNo))
+            .ToList();
 
+        if (sheetsToDelete.Any())
+        {
+            Console.WriteLine($"Deleting {sheetsToDelete.Count} outdated sheets for ProjectId {projectId}");
+            _context.QuantitySheets.RemoveRange(sheetsToDelete);
+        }
         // Prepare a list to track new sheets that need to be processed
         var processedNewSheets = new List<QuantitySheet>();
 
